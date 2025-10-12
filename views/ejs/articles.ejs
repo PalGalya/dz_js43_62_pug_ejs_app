@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1><%= title %></h1>
+      <div class="navigation">
+        <p>
+          <a href="/">На головну</a>
+          <span> | </span>
+          <a href="/users">Користувачі (PUG)</a>
+        </p>
+      </div>
+
+      <div class="articles-list">
+        <% if (articles && articles.length > 0) { %>
+        <h2>Список статей:</h2>
+        <div class="article-items">
+          <% articles.forEach(function(article) { %>
+          <div class="article-item">
+            <div class="article-card">
+              <h3 class="article-title"><%= article.title %></h3>
+              <p class="article-excerpt"><%= article.excerpt %></p>
+              <div class="article-meta">
+                <span class="article-author">Автор: <%= article.author %></span>
+                <span class="article-date">Дата: <%= article.date %></span>
+                <span class="article-category"
+                  >Категорія: <%= article.category %></span
+                >
+              </div>
+              <div class="article-actions">
+                <a href="/articles/<%= article.id %>" class="btn btn-primary"
+                  >Читати повністю</a
+                >
+              </div>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+        <% } else { %>
+        <div class="no-articles">
+          <p>Статей не знайдено.</p>
+        </div>
+        <% } %>
+
+        <div class="add-article">
+          <a href="/articles/new" class="btn btn-success">Додати статтю</a>
+        </div>
+      </div>
+
+      <footer class="footer">
+        <p>
+          &copy; 2024 Express PUG+EJS Demo. Домашнє завдання з курсу Full-stack
+          JavaScript.
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>

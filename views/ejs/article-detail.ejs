@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="navigation">
+        <p>
+          <a href="/articles">← Назад до списку</a>
+          <span> | </span>
+          <a href="/">На головну</a>
+          <span> | </span>
+          <a href="/users">Користувачі (PUG)</a>
+        </p>
+      </div>
+
+      <% if (article) { %>
+      <div class="article-details">
+        <article class="article-content">
+          <header class="article-header">
+            <h1><%= article.title %></h1>
+            <div class="article-meta">
+              <p class="article-author">
+                <strong>Автор:</strong> <%= article.author %>
+              </p>
+              <p class="article-date">
+                <strong>Дата публікації:</strong> <%= article.date %>
+              </p>
+              <p class="article-category">
+                <strong>Категорія:</strong> <%= article.category %>
+              </p>
+              <% if (article.tags && article.tags.length > 0) { %>
+              <div class="article-tags">
+                <strong>Теги:</strong>
+                <% article.tags.forEach(function(tag, index) { %>
+                <span class="tag"><%= tag %></span><% if (index <
+                article.tags.length - 1) { %>, <% } %> <% }); %>
+              </div>
+              <% } %>
+            </div>
+          </header>
+
+          <div class="article-body">
+            <% if (article.image) { %>
+            <img
+              src="<%= article.image %>"
+              alt="<%= article.title %>"
+              class="article-image"
+            />
+            <% } %>
+            <div class="article-text"><%- article.content %></div>
+          </div>
+
+          <footer class="article-footer">
+            <div class="article-actions">
+              <a href="/articles/<%= article.id %>/edit" class="btn btn-primary"
+                >Редагувати</a
+              >
+              <a
+                href="/articles/<%= article.id %>/delete"
+                onclick="return confirm('Ви впевнені, що хочете видалити цю статтю?')"
+                class="btn btn-danger"
+                >Видалити</a
+              >
+            </div>
+          </footer>
+        </article>
+      </div>
+      <% } else { %>
+      <div class="error">
+        <h1>Статтю не знайдено</h1>
+        <p>Стаття з таким ID не існує.</p>
+        <a href="/articles" class="btn btn-primary"
+          >Повернутися до списку статей</a
+        >
+      </div>
+      <% } %>
+
+      <footer class="footer">
+        <p>
+          &copy; 2024 Express PUG+EJS Demo. Домашнє завдання з курсу Full-stack
+          JavaScript.
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>
