@@ -3,10 +3,13 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+var jwt = require("jsonwebtoken");
+var bcrypt = require("bcryptjs");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var articlesRouter = require("./routes/articles");
+var authRouter = require("./routes/auth");
 
 var app = express();
 
@@ -23,7 +26,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+// Middleware для theme cookies
+app.use((req, res, next) => {
+  res.locals.theme = req.cookies.theme || "light";
+  res.locals.user = req.cookies.user || null;
+  next();
+});
+
 app.use("/", indexRouter);
+app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/articles", articlesRouter);
 

@@ -2,6 +2,68 @@ doctype html
 html
   head
     title= title
+    link(rel='icon', href='/favicon.ico')
     link(rel='stylesheet', href='/stylesheets/style.css')
-  body
+    style.
+      .dark { background: #1a1a1a; color: #fff; }
+      .dark .card { background: #2d2d2d; border-color: #444; }
+      .theme-switcher { position: fixed; top: 10px; right: 10px; z-index: 1000; }
+      .auth-panel { position: fixed; top: 10px; left: 10px; z-index: 1000; }
+  body(class=theme === 'dark' ? 'dark' : '')
+    .auth-panel
+      if user
+        span Привіт, #{user}!
+        button#logout.btn.btn-sm Вийти
+      else
+        button#login.btn.btn-sm Увійти
+        button#register.btn.btn-sm Реєстрація
+    .theme-switcher
+      button#themeToggle.btn.btn-sm= theme === 'dark' ? '☀️' : '🌙'
+
     block content
+
+    script.
+      // Theme toggle
+      document.getElementById('themeToggle').onclick = () => {
+        const currentTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+        fetch('/auth/theme', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ theme: currentTheme })
+        }).then(() => location.reload());
+      };
+
+      // Auth handlers
+      document.getElementById('logout')?.onclick = () => {
+        fetch('/auth/logout', { method: 'POST' }).then(() => location.reload());
+      };
+
+      document.getElementById('login')?.onclick = () => {
+        const username = prompt('Ім\'я користувача:');
+        const password = prompt('Пароль:');
+        if (username && password) {
+          fetch('/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+          }).then(res => res.json()).then(data => {
+            alert(data.message);
+            if (data.user) location.reload();
+          });
+        }
+      };
+
+      document.getElementById('register')?.onclick = () => {
+        const username = prompt('Ім\'я користувача:');
+        const password = prompt('Пароль:');
+        if (username && password) {
+          fetch('/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+          }).then(res => res.json()).then(data => {
+            alert(data.message);
+            if (data.user) location.reload();
+          });
+        }
+      };

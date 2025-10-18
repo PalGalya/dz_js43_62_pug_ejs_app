@@ -4,9 +4,46 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= title %></title>
+    <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="/stylesheets/style.css" />
+    <style>
+      .dark {
+        background: #1a1a1a;
+        color: #fff;
+      }
+      .dark .card {
+        background: #2d2d2d;
+        border-color: #444;
+      }
+      .theme-switcher {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+      }
+      .auth-panel {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1000;
+      }
+    </style>
   </head>
-  <body>
+  <body class="<%= theme === 'dark' ? 'dark' : '' %>">
+    <div class="auth-panel">
+      <% if (user) { %>
+      <span>Привіт, <%= user %>!</span>
+      <button id="logout" class="btn btn-sm">Вийти</button>
+      <% } else { %>
+      <button id="login" class="btn btn-sm">Увійти</button>
+      <button id="register" class="btn btn-sm">Реєстрація</button>
+      <% } %>
+    </div>
+    <div class="theme-switcher">
+      <button id="themeToggle" class="btn btn-sm">
+        <%= theme === 'dark' ? '☀️' : '🌙' %>
+      </button>
+    </div>
     <div class="container">
       <h1><%= title %></h1>
       <div class="navigation">
@@ -56,5 +93,52 @@
         </p>
       </footer>
     </div>
+
+    <script>
+      // Theme toggle
+      document.getElementById('themeToggle').onclick = () => {
+        const currentTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+        fetch('/auth/theme', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ theme: currentTheme })
+        }).then(() => location.reload());
+      };
+
+      // Auth handlers
+      document.getElementById('logout')?.onclick = () => {
+        fetch('/auth/logout', { method: 'POST' }).then(() => location.reload());
+      };
+
+      document.getElementById('login')?.onclick = () => {
+        const username = prompt('Ім\'я користувача:');
+        const password = prompt('Пароль:');
+        if (username && password) {
+          fetch('/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+          }).then(res => res.json()).then(data => {
+            alert(data.message);
+            if (data.user) location.reload();
+          });
+        }
+      };
+
+      document.getElementById('register')?.onclick = () => {
+        const username = prompt('Ім\'я користувача:');
+        const password = prompt('Пароль:');
+        if (username && password) {
+          fetch('/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+          }).then(res => res.json()).then(data => {
+            alert(data.message);
+            if (data.user) location.reload();
+          });
+        }
+      };
+    </script>
   </body>
 </html>
