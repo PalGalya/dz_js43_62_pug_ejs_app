@@ -54,21 +54,7 @@
             <% } %>
             <div class="article-text"><%- article.content %></div>
           </div>
-
-          <footer class="article-footer">
-            <div class="article-actions">
-              <a href="/articles/<%= article.id %>/edit" class="btn btn-primary"
-                >Редагувати</a
-              >
-              <a
-                href="/articles/<%= article.id %>/delete"
-                onclick="return confirm('Ви впевнені, що хочете видалити цю статтю?')"
-                class="btn btn-danger"
-                >Видалити</a
-              >
-            </div>
-          </footer>
-        </article>
+        </div>
       </div>
       <% } else { %>
       <div class="error">
