@@ -95,12 +95,37 @@ PORT=3001 npm start
 http://localhost:3000
 ```
 
+## ⚠️ **Обмеження проекту**
+
+### 🔴 **Критичні обмеження для production:**
+
+- **In-Memory Storage**: Користувачі зберігаються тільки в пам'яті - **всі дані втрачаються при перезапуску сервера**
+- **JWT Secret**: Використовується .env файл, але за замовчуванням fallback значення (змініть у production!)
+- **No Database**: Відсутня постійна база даних (MongoDB, PostgreSQL, тощо)
+- **Session Management**: Немає централізованого управління сесіями
+
+### 🟡 **Технічні обмеження:**
+
+- **User Storage**: Максимальна кількість користувачів обмежена RAM
+- **Data Persistence**: Тестові дані (користувачі, статті) захардкоджені
+- **Scalability**: Не призначено для великої кількості користувачів
+- **Security**: Basic реалізація без advanced безпекових заходів
+
+### 💡 **Для production потрібно:**
+
+- Інтеграція з базою даних (MongoDB/PostgreSQL)
+- Redis для зберігання сесій
+- Proper secret management (Azure Key Vault, AWS Secrets Manager)
+- Rate limiting та додаткові security заходи
+- Логування та моніторинг
+
 ## 🏗️ **Структура проекту**
 
 ```
+├── .env                   # Змінні оточення (JWT_SECRET, PORT)
 ├── app.js                 # Основний файл додатку з налаштуванням шаблонізаторів
-├── package.json           # Залежності: express, pug, ejs
-├── bin/www                # Точка входу сервера
+├── package.json           # Залежності: express, pug, ejs, jwt, bcryptjs, dotenv
+├── bin/www                # Точка входу сервера (HTTP server setup)
 ├── public/
 │   ├── stylesheets/style.css    # CSS стилі для всіх сторінок
 │   ├── images/default-avatar.svg # Аватар за замовчуванням
@@ -110,7 +135,6 @@ http://localhost:3000
 │   ├── users.js           # Маршрути користувачів (PUG)
 │   ├── articles.js        # Маршрути статей (EJS)
 │   └── auth.js            # JWT авторизація та налаштування
-│   └── auth.js            # Авторизація та JWT
 └── views/
     ├── pug/               # PUG шаблони
     │   ├── layout.pug     # Базовий layout для PUG
@@ -121,6 +145,39 @@ http://localhost:3000
     └── ejs/               # EJS шаблони
         ├── articles.ejs   # Список статей (повний HTML документ)
         └── article-detail.ejs # Деталі статті (повний HTML документ)
+```
+
+## ⚙️ **Middleware та архітектура**
+
+### 🔧 **bin/www - Точка входу**
+Файл `bin/www` є стандартною точкою входу Express додатку:
+- Налаштовує HTTP сервер
+- Обробляє помилки запуску
+- Управляє портом (з .env або за замовчуванням 3000)
+- Запускає сервер та обробляє SIGTERM сигнали
+
+### 🛠️ **app.js - Middleware Stack**
+```javascript
+// Middleware для theme cookies (рядки 30-35)
+app.use((req, res, next) => {
+  res.locals.theme = req.cookies.theme || 'light';
+  res.locals.user = req.cookies.user || null;
+  next();
+});
+```
+
+**Функції middleware:**
+- Автоматично читає theme з cookies для всіх шаблонів
+- Встановлює `res.locals.theme` та `res.locals.user`
+- Доступно у всіх PUG та EJS шаблонах без додаткових налаштувань
+
+### 🔐 **JWT Middleware в auth.js**
+```javascript
+function authenticateToken(req, res, next) {
+  const token = req.cookies.token;
+  // Перевірка та валідація JWT токену
+  // Встановлює req.user для захищених роутів
+}
 ```
 
 ## 🎯 **Як використовувати новий функціонал**
@@ -153,11 +210,28 @@ http://localhost:3000
 
 ### Маршрути авторизації (JWT + Cookies)
 
-- **POST /auth/register** - Реєстрація нового користувача
-- **POST /auth/login** - Вхід користувача
-- **POST /auth/logout** - Вихід користувача
-- **GET /auth/profile** - Захищений маршрут (потрібен JWT)
-- **POST /auth/theme** - Зміна теми оформлення (light/dark)
+- **POST /auth/register** - Реєстрація нового користувача (валідація: мін. 3 символи username, мін. 6 символів password)
+- **POST /auth/login** - Вхід користувача (генерує JWT токен на 1 годину)
+- **POST /auth/logout** - Вихід користувача (очищає cookies)
+- **GET /auth/profile** - Захищений маршрут (потрібен JWT токен в cookies)
+  - **Успішна відповідь**: 
+    ```json
+    {
+      "message": "User profile",
+      "user": {
+        "id": 1,
+        "username": "john_doe",
+        "registeredAt": "Unknown"
+      },
+      "tokenInfo": {
+        "expiresIn": "1 hour from login",
+        "issuedFor": "john_doe"
+      }
+    }
+    ```
+  - **Помилка 401**: `{"message": "Access denied"}` (відсутній токен)
+  - **Помилка 403**: `{"message": "Invalid token"}` (недійсний токен)
+- **POST /auth/theme** - Зміна теми оформлення (light/dark, зберігається на 30 днів)
 
 ### Статичні файли
 
